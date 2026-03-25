@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Luxury Car Game</title>
+  <style>
+    body { margin:0; overflow:hidden; font-family:Arial; }
+    #menu {
+      position:absolute;
+      top:40%;
+      width:100%;
+      text-align:center;
+      color:white;
+    }
+    button {
+      padding:15px 30px;
+      margin:10px;
+      font-size:18px;
+      cursor:pointer;
+    }
+    #hud {
+      position:absolute;
+      top:10px;
+      left:10px;
+      color:white;
+      font-size:18px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>Luxury Car Simulator</h1>
+  <button onclick="startGame('career')">Career Mode</button>
+  <button onclick="startGame('free')">Free Mode</button>
+</div>
+
+<div id="hud" style="display:none;">
+  Fuel: <span id="fuel">100</span> |
+  Damage: <span id="damage">0</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+
+<script>
+let scene, camera, renderer, car;
+let fuel = 100;
+let damage = 0;
+
+function startGame(mode){
+  document.getElementById("menu").style.display = "none";
+  document.getElementById("hud").style.display = "block";
+
+  scene = new THREE.Scene();
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+  renderer = new THREE.WebGLRenderer();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  document.body.appendChild(renderer.domElement);
+
+  // Road
+  const geometry = new THREE.PlaneGeometry(200, 200);
+  const material = new THREE.MeshBasicMaterial({color: 0x333333});
+  const road = new THREE.Mesh(geometry, material);
+  road.rotation.x = -Math.PI / 2;
+  scene.add(road);
+
+  // Car
+  const carGeo = new THREE.BoxGeometry(2,1,4);
+  const carMat = new THREE.MeshBasicMaterial({color: 0xff0000});
+  car = new THREE.Mesh(carGeo, carMat);
+  scene.add(car);
+
+  camera.position.set(0,5,10);
+
+  animate();
+}
+
+// Controls
+document.addEventListener("keydown", (e)=>{
+  if(!car) return;
+
+  if(e.key==="w"){ car.position.z -= 0.5; fuel -= 0.1; }
+  if(e.key==="s"){ car.position.z += 0.5; }
+  if(e.key==="a"){ car.position.x -= 0.5; }
+  if(e.key==="d"){ car.position.x += 0.5; }
+
+  if(e.key==="c"){ // camera switch
+    camera.position.y = camera.position.y === 5 ? 1 : 5;
+  }
+
+  // fuel low = damage increase
+  if(fuel <= 0){
+    damage += 1;
+  }
+
+  updateHUD();
+});
+
+function updateHUD(){
+  document.getElementById("fuel").innerText = Math.floor(fuel);
+  document.getElementById("damage").innerText = damage;
+}
+
+function animate(){
+  requestAnimationFrame(animate);
+
+  if(car){
+    camera.lookAt(car.position);
+  }
+
+  renderer.render(scene, camera);
+}
+</script>
+
+</body>
+</html>
